@@ -12,7 +12,7 @@ import org.objenesis.ObjenesisStd;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-
+@SuppressWarnings("all")
 public class ProtostuffSerialize implements RpcSerialize {
 
     private static final SchemaCache cachedSchema = SchemaCache.getInstance();
@@ -37,7 +37,7 @@ public class ProtostuffSerialize implements RpcSerialize {
     public Object deserialize(InputStream input) {
         try {
             Class cls = isRpcDirect() ? MessageRequest.class : MessageResponse.class;
-            Object message = (Object) objenesis.newInstance(cls);
+            Object message = objenesis.newInstance(cls);
             Schema<Object> schema = getSchema(cls);
             ProtostuffIOUtil.mergeFrom(input, message, schema);
             return message;
