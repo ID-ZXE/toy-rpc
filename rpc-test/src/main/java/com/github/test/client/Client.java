@@ -26,7 +26,8 @@ public class Client {
     @Test
     public void testRequest() {
         HelloService execute = MessageSendExecutor.getInstance().execute(HelloService.class);
-        MessageSendExecutor.getInstance().load(CommonConfig.ipAddr, SerializeProtocol.valueOf(CommonConfig.SERIALIZE));
+        // MessageSendExecutor.getInstance().load(CommonConfig.IP_ADDR, SerializeProtocol.valueOf(CommonConfig.PROTOSTUFF_SERIALIZE));
+        MessageSendExecutor.getInstance().load(CommonConfig.IP_ADDR, SerializeProtocol.valueOf(CommonConfig.JACKSON_SERIALIZE));
         String result = execute.sayHello();
         LOGGER.info("result:{}", result);
     }
@@ -34,7 +35,7 @@ public class Client {
     @Test
     public void testForeach() {
         StudentService studentService = MessageSendExecutor.getInstance().execute(StudentService.class);
-        MessageSendExecutor.getInstance().load(CommonConfig.ipAddr, SerializeProtocol.valueOf(CommonConfig.SERIALIZE));
+        MessageSendExecutor.getInstance().load(CommonConfig.IP_ADDR, SerializeProtocol.valueOf(CommonConfig.PROTOSTUFF_SERIALIZE));
         for (int i = 0; i < 100; i++) {
             Student student = studentService.queryStudent(1);
             LOGGER.info("stu:{}", student);
@@ -44,7 +45,7 @@ public class Client {
     @Test
     public void testException() {
         ExceptionService execute = MessageSendExecutor.getInstance().execute(ExceptionService.class);
-        MessageSendExecutor.getInstance().load(CommonConfig.ipAddr, SerializeProtocol.valueOf(CommonConfig.SERIALIZE));
+        MessageSendExecutor.getInstance().load(CommonConfig.IP_ADDR, SerializeProtocol.valueOf(CommonConfig.PROTOSTUFF_SERIALIZE));
         String result = execute.throwException();
         LOGGER.info("result:{}", result);
     }

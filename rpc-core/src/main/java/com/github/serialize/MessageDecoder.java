@@ -12,7 +12,8 @@ import java.util.logging.Logger;
 
 public class MessageDecoder extends ByteToMessageDecoder {
 
-    final public static int MESSAGE_LENGTH = MessageCodecUtil.MESSAGE_LENGTH;
+    public static final int MESSAGE_LENGTH = MessageCodecUtil.MESSAGE_LENGTH;
+
     private MessageCodecUtil util = null;
 
     public MessageDecoder(final MessageCodecUtil util) {
@@ -34,7 +35,6 @@ public class MessageDecoder extends ByteToMessageDecoder {
 
         if (in.readableBytes() < messageLength) {
             in.resetReaderIndex();
-            return;
         } else {
             byte[] messageBody = new byte[messageLength];
             in.readBytes(messageBody);

@@ -1,5 +1,6 @@
 package com.github.netty.serialize;
 
+import com.github.netty.handler.impl.JacksonSendHandler;
 import com.github.netty.handler.impl.NativeSendHandler;
 import com.github.netty.handler.NettyRpcSendHandler;
 import com.github.netty.handler.impl.ProtostuffSendHandler;
@@ -17,6 +18,7 @@ public class RpcSendSerializeFrame implements RpcSerializeFrame {
     static {
         HANDLER.putInstance(NativeSendHandler.class, new NativeSendHandler());
         HANDLER.putInstance(ProtostuffSendHandler.class, new ProtostuffSendHandler());
+        HANDLER.putInstance(JacksonSendHandler.class, new JacksonSendHandler());
     }
 
     @Override
@@ -28,6 +30,10 @@ public class RpcSendSerializeFrame implements RpcSerializeFrame {
             }
             case PROTOSTUFF: {
                 HANDLER.getInstance(ProtostuffSendHandler.class).handle(pipeline);
+                break;
+            }
+            case JACKSON: {
+                HANDLER.getInstance(JacksonSendHandler.class).handle(pipeline);
                 break;
             }
             default: {

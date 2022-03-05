@@ -1,5 +1,6 @@
 package com.github.netty.serialize;
 
+import com.github.netty.handler.impl.JacksonRecvHandler;
 import com.github.netty.handler.impl.NativeRecvHandler;
 import com.github.netty.handler.NettyRpcRecvHandler;
 import com.github.netty.handler.impl.ProtostuffRecvHandler;
@@ -19,22 +20,27 @@ public class RpcRecvSerializeFrame implements RpcSerializeFrame {
         this.handlerMap = handlerMap;
     }
 
-    private static final ClassToInstanceMap<NettyRpcRecvHandler> handler = MutableClassToInstanceMap.create();
+    private static final ClassToInstanceMap<NettyRpcRecvHandler> HANDLER = MutableClassToInstanceMap.create();
 
     static {
-        handler.putInstance(NativeRecvHandler.class, new NativeRecvHandler());
-        handler.putInstance(ProtostuffRecvHandler.class, new ProtostuffRecvHandler());
+        HANDLER.putInstance(NativeRecvHandler.class, new NativeRecvHandler());
+        HANDLER.putInstance(ProtostuffRecvHandler.class, new ProtostuffRecvHandler());
+        HANDLER.putInstance(JacksonRecvHandler.class, new JacksonRecvHandler());
     }
 
     @Override
     public void select(SerializeProtocol protocol, ChannelPipeline pipeline) {
         switch (protocol) {
             case NATIVE: {
-                handler.getInstance(NativeRecvHandler.class).handle(handlerMap, pipeline);
+                HANDLER.getInstance(NativeRecvHandler.class).handle(handlerMap, pipeline);
                 break;
             }
             case PROTOSTUFF: {
-                handler.getInstance(ProtostuffRecvHandler.class).handle(handlerMap, pipeline);
+                HANDLER.getInstance(ProtostuffRecvHandler.class).handle(handlerMap, pipeline);
+                break;
+            }
+            case JACKSON: {
+                HANDLER.getInstance(JacksonRecvHandler.class).handle(handlerMap, pipeline);
                 break;
             }
             default: {

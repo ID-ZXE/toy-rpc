@@ -6,12 +6,17 @@ package com.github.test;
  * *****************
  * function:
  */
-public class CommonConfig {
+public final class CommonConfig {
 
-    public static final String ipAddr = "127.0.0.1:18887";
+    private CommonConfig() {
+    }
 
-    public static final String echoApiPort = "18888";
+    public static final String IP_ADDR = "127.0.0.1:18887";
 
-    public static final String SERIALIZE = "PROTOSTUFF";
+    public static final String ECHO_API_PORT = "18888";
+
+    public static final String PROTOSTUFF_SERIALIZE = "PROTOSTUFF";
+
+    public static final String JACKSON_SERIALIZE = "JACKSON";
 
 }

@@ -1,7 +1,10 @@
 package com.github.core;
 
 
-public class SystemConfig {
+public final class SystemConfig {
+
+    private SystemConfig() {
+    }
 
     public static final String SYSTEM_PROPERTY_THREADPOOL_REJECTED_POLICY_ATTR = "rpc.parallel.rejected.policy";
 
@@ -15,7 +18,9 @@ public class SystemConfig {
 
     public static final int SYSTEM_PROPERTY_CLIENT_RECONNECT_DELAY = Integer.parseInt(System.getProperty("rpc.default.client.reconnect.delay", "10"));
 
-    // 处理器数量
+    /**
+     * 处理器数量
+     */
     public static final int SYSTEM_PROPERTY_PARALLEL = Math.max(2, Runtime.getRuntime().availableProcessors());
 
     public static final String DELIMITER = ":";

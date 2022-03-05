@@ -1,4 +1,4 @@
-package com.github.serialize.protostuff;
+package com.github.serialize.jackson;
 
 import com.github.serialize.MessageCodecUtil;
 import com.google.common.io.Closer;
@@ -9,11 +9,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 
-public class ProtostuffCodecUtil implements MessageCodecUtil {
+public class JacksonCodecUtil implements MessageCodecUtil {
 
     private static final Closer CLOSER = Closer.create();
 
-    private final ProtostuffSerializePool POOL = ProtostuffSerializePool.getProtostuffPoolInstance();
+    private static final JacksonSerializePool POOL = JacksonSerializePool.getJacksonSerializePoolInstance();
 
     private boolean rpcDirect = false;
 
@@ -26,13 +26,13 @@ public class ProtostuffCodecUtil implements MessageCodecUtil {
         try {
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             CLOSER.register(byteArrayOutputStream);
-            ProtostuffSerialize protostuffSerialization = POOL.borrow();
-            protostuffSerialization.serialize(byteArrayOutputStream, message);
+            JacksonSerialize jacksonSerialize = POOL.borrow();
+            jacksonSerialize.serialize(byteArrayOutputStream, message);
             byte[] body = byteArrayOutputStream.toByteArray();
             int dataLength = body.length;
             out.writeInt(dataLength);
             out.writeBytes(body);
-            POOL.restore(protostuffSerialization);
+            POOL.restore(jacksonSerialize);
         } finally {
             CLOSER.close();
         }
@@ -43,10 +43,10 @@ public class ProtostuffCodecUtil implements MessageCodecUtil {
         try {
             ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(body);
             CLOSER.register(byteArrayInputStream);
-            ProtostuffSerialize protostuffSerialization = POOL.borrow();
-            protostuffSerialization.setRpcDirect(rpcDirect);
-            Object obj = protostuffSerialization.deserialize(byteArrayInputStream);
-            POOL.restore(protostuffSerialization);
+            JacksonSerialize jacksonSerialize = POOL.borrow();
+            jacksonSerialize.setRpcDirect(rpcDirect);
+            Object obj = jacksonSerialize.deserialize(byteArrayInputStream);
+            POOL.restore(jacksonSerialize);
             return obj;
         } finally {
             CLOSER.close();
