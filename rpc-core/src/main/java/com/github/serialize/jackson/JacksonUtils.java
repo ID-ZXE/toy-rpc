@@ -36,7 +36,8 @@ public final class JacksonUtils {
         FilterProvider theFilter = new SimpleFilterProvider().addFilter("outFilter", SimpleBeanPropertyFilter.serializeAllExcept());
         MAPPER.activateDefaultTypingAsProperty(LaissezFaireSubTypeValidator.instance, ObjectMapper.DefaultTyping.NON_FINAL, CLASS_KEY);
         MAPPER.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-        MAPPER.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+        // 排除空值, Strings.length()返回0, Java数组length=0等场景
+        // MAPPER.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         // 设置输入时忽略在JSON字符串中存在但Java对象实际没有的属性
         MAPPER.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         //当bean没有属性不报错

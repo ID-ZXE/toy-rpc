@@ -4,15 +4,20 @@ import com.github.entity.MessageRequest;
 import com.github.entity.MessageResponse;
 import com.github.serialize.RpcSerialize;
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.invoke.MethodHandles;
 import java.nio.charset.StandardCharsets;
 
 
 public class JacksonSerialize implements RpcSerialize {
 
     private boolean rpcDirect = false;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     public boolean isRpcDirect() {
         return rpcDirect;
@@ -36,7 +41,9 @@ public class JacksonSerialize implements RpcSerialize {
     @Override
     public void serialize(OutputStream output, Object object) {
         try {
-            IOUtils.write(JacksonUtils.serialize(object), output, StandardCharsets.UTF_8);
+            String content = JacksonUtils.serialize(object);
+            LOGGER.info("serialize result:{}", content);
+            IOUtils.write(content, output, StandardCharsets.UTF_8);
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }

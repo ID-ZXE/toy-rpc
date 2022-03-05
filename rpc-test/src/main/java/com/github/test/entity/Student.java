@@ -1,6 +1,7 @@
 package com.github.test.entity;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * @author hangs.zhang
@@ -9,6 +10,7 @@ import lombok.Data;
  * function:
  */
 @Data
+@NoArgsConstructor
 public class Student {
 
     private Integer id;
@@ -19,4 +21,5 @@ public class Student {
         this.id = id;
         this.name = name;
     }
+
 }
