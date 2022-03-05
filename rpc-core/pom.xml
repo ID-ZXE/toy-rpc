@@ -27,7 +27,7 @@
 
     <properties>
         <org.slf4j>1.7.5</org.slf4j>
-        <ch.qos.logback>1.0.13</ch.qos.logback>
+        <ch.qos.logback>1.2.8</ch.qos.logback>
     </properties>
 
     <dependencyManagement>
