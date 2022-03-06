@@ -14,10 +14,10 @@ public class MessageDecoder extends ByteToMessageDecoder {
 
     public static final int MESSAGE_LENGTH = MessageCodecUtil.MESSAGE_LENGTH;
 
-    private MessageCodecUtil util = null;
+    private final MessageCodecUtil messageCodecUtil;
 
     public MessageDecoder(final MessageCodecUtil util) {
-        this.util = util;
+        this.messageCodecUtil = util;
     }
 
     @Override
@@ -40,7 +40,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
             in.readBytes(messageBody);
 
             try {
-                Object obj = util.decode(messageBody);
+                Object obj = messageCodecUtil.decode(messageBody);
                 out.add(obj);
             } catch (IOException ex) {
                 Logger.getLogger(MessageDecoder.class.getName()).log(Level.SEVERE, null, ex);

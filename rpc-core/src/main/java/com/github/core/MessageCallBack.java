@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -75,7 +76,7 @@ public class MessageCallBack {
     }
 
     private boolean getInvokeResult() {
-        return (!this.response.getError().equals(SystemConfig.FILTER_RESPONSE_MSG) &&
+        return (!Objects.equals(this.response.getError(), SystemConfig.FILTER_RESPONSE_MSG) &&
                 (!this.response.isReturnNotNull() || (this.response.isReturnNotNull() && this.response.getResult() != null)));
     }
 

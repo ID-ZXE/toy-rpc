@@ -31,7 +31,7 @@ public class MessageRecvExecutor {
     /**
      * 默认的序列化方式
      */
-    private SerializeProtocol serializeProtocol = SerializeProtocol.NATIVE;
+    private SerializeProtocol serializeProtocol = SerializeProtocol.JACKSON;
 
     /**
      * 切割ip与port
