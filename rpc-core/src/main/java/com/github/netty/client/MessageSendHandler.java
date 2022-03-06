@@ -9,8 +9,10 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import lombok.Getter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.net.SocketAddress;
+import java.lang.invoke.MethodHandles;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Getter
@@ -18,15 +20,9 @@ public class MessageSendHandler extends ChannelInboundHandlerAdapter {
 
     private final ConcurrentHashMap<String, MessageCallBack> callBackMap = new ConcurrentHashMap<>();
 
-    private volatile Channel channel;
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private SocketAddress remoteAddr;
-
-    @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        super.channelActive(ctx);
-        remoteAddr = channel.remoteAddress();
-    }
+    private Channel channel;
 
     @Override
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
@@ -49,7 +45,7 @@ public class MessageSendHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        cause.printStackTrace();
+        LOGGER.error("MessageSendHandler.exceptionCaught error", cause);
         ctx.close();
     }
 

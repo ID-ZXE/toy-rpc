@@ -26,7 +26,6 @@ public class Client {
     @Test
     public void testRequest() {
         HelloService execute = MessageSendExecutor.getInstance().execute(HelloService.class);
-        // MessageSendExecutor.getInstance().load(CommonConfig.IP_ADDR, SerializeProtocol.valueOf(CommonConfig.PROTOSTUFF_SERIALIZE));
         MessageSendExecutor.getInstance().load(CommonConfig.IP_ADDR, SerializeProtocol.valueOf(CommonConfig.JACKSON_SERIALIZE));
         String result = execute.sayHello();
         LOGGER.info("result:{}", result);
@@ -46,7 +45,7 @@ public class Client {
     @Test
     public void testException() {
         ExceptionService execute = MessageSendExecutor.getInstance().execute(ExceptionService.class);
-        MessageSendExecutor.getInstance().load(CommonConfig.IP_ADDR, SerializeProtocol.valueOf(CommonConfig.PROTOSTUFF_SERIALIZE));
+        MessageSendExecutor.getInstance().load(CommonConfig.IP_ADDR, SerializeProtocol.valueOf(CommonConfig.JACKSON_SERIALIZE));
         String result = execute.throwException();
         LOGGER.info("result:{}", result);
     }

@@ -22,7 +22,6 @@ public class BootServer {
     public static void main(String[] args) {
         MessageRecvExecutor ref = MessageRecvExecutor.getInstance();
         ref.setServerAddress(CommonConfig.IP_ADDR);
-        // ref.setSerializeProtocol(Enum.valueOf(SerializeProtocol.class, CommonConfig.SERIALIZE));
         ref.setSerializeProtocol(Enum.valueOf(SerializeProtocol.class, CommonConfig.JACKSON_SERIALIZE));
         ref.start();
 

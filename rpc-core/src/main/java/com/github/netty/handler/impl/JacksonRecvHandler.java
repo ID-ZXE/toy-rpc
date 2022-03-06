@@ -19,7 +19,7 @@ public class JacksonRecvHandler implements NettyRpcRecvHandler {
         // 设置netty的处理链条,Protostuff实现了netty的编/解码接口
         pipeline.addLast(new JacksonEncoder(util));
         pipeline.addLast(new JacksonDecoder(util));
-
+        // 设置入站处理器
         pipeline.addLast(new MessageRecvHandler(handlerMap));
     }
 

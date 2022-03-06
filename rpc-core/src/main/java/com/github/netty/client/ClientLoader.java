@@ -19,7 +19,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class ClientLoader {
 
-    private static volatile ClientLoader rpcServerLoader;
+    private static final ClientLoader RPC_SERVER_LOADER = new ClientLoader();
 
     private static final String DELIMITER = SystemConfig.DELIMITER;
 
@@ -27,11 +27,12 @@ public class ClientLoader {
 
     private final EventLoopGroup eventLoopGroup = new NioEventLoopGroup(PARALLEL);
 
-    private static final int threadNums = SystemConfig.SYSTEM_PROPERTY_THREADPOOL_THREAD_NUMS;
+    private static final int THREAD_NUMS = SystemConfig.SYSTEM_PROPERTY_THREADPOOL_THREAD_NUMS;
 
-    private static final int queueNums = SystemConfig.SYSTEM_PROPERTY_THREADPOOL_QUEUE_NUMS;
+    private static final int QUEUE_NUMS = SystemConfig.SYSTEM_PROPERTY_THREADPOOL_QUEUE_NUMS;
 
-    private static final ListeningExecutorService threadPoolExecutor = MoreExecutors.listeningDecorator((ThreadPoolExecutor) RpcThreadPool.getExecutor(threadNums, queueNums));
+    private static final ListeningExecutorService THREAD_POOL_EXECUTOR =
+            MoreExecutors.listeningDecorator((ThreadPoolExecutor) RpcThreadPool.getExecutor(THREAD_NUMS, QUEUE_NUMS));
 
     private MessageSendHandler messageSendHandler = null;
 
@@ -47,14 +48,7 @@ public class ClientLoader {
     }
 
     public static ClientLoader getInstance() {
-        if (rpcServerLoader == null) {
-            synchronized (ClientLoader.class) {
-                if (rpcServerLoader == null) {
-                    rpcServerLoader = new ClientLoader();
-                }
-            }
-        }
-        return rpcServerLoader;
+        return RPC_SERVER_LOADER;
     }
 
     public void load(String serverAddress, SerializeProtocol serializeProtocol) {
@@ -67,13 +61,13 @@ public class ClientLoader {
             LOGGER.info("RPC Client start success!");
             LOGGER.info("ip:{},port:{},protocol:{}", host, port, serializeProtocol);
 
-            ListenableFuture<Boolean> listenableFuture = threadPoolExecutor.submit(new MessageSendInitializeTask(eventLoopGroup, remoteAddr, serializeProtocol));
+            ListenableFuture<Boolean> listenableFuture = THREAD_POOL_EXECUTOR.submit(new MessageSendInitializeTask(eventLoopGroup, remoteAddr, serializeProtocol));
 
             Futures.addCallback(listenableFuture, new FutureCallback<Boolean>() {
                 @Override
                 public void onSuccess(Boolean result) {
+                    lock.lock();
                     try {
-                        lock.lock();
                         if (messageSendHandler == null) {
                             handlerStatus.await();
                         }
@@ -91,15 +85,15 @@ public class ClientLoader {
                 public void onFailure(Throwable t) {
                     LOGGER.error("load rpc client failure", t);
                 }
-            }, threadPoolExecutor);
+            }, THREAD_POOL_EXECUTOR);
         } else {
             throw new RuntimeException();
         }
     }
 
     public void setMessageSendHandler(MessageSendHandler messageInHandler) {
+        lock.lock();
         try {
-            lock.lock();
             this.messageSendHandler = messageInHandler;
             handlerStatus.signal();
         } finally {
@@ -108,8 +102,8 @@ public class ClientLoader {
     }
 
     public MessageSendHandler getMessageSendHandler() throws InterruptedException {
+        lock.lock();
         try {
-            lock.lock();
             if (messageSendHandler == null) {
                 connectStatus.await();
             }
@@ -121,7 +115,7 @@ public class ClientLoader {
 
     public void unLoad() {
         messageSendHandler.close();
-        threadPoolExecutor.shutdown();
+        THREAD_POOL_EXECUTOR.shutdown();
         eventLoopGroup.shutdownGracefully();
     }
 

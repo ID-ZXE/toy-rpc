@@ -4,7 +4,10 @@ import com.github.exception.InvokeModuleException;
 import com.github.exception.InvokeTimeoutException;
 import com.github.exception.RejectResponeException;
 import com.github.entity.MessageResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.lang.invoke.MethodHandles;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -18,10 +21,12 @@ public class MessageCallBack {
 
     private final Condition finish = lock.newCondition();
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
     public Object start() {
+        lock.lock();
         try {
-            lock.lock();
-            // 等待客户端响应
+            // 等待服务端响应
             await();
             if (response != null) {
                 boolean isInvokeSucc = getInvokeResult();
@@ -43,8 +48,8 @@ public class MessageCallBack {
     }
 
     public void over(MessageResponse response) {
+        lock.lock();
         try {
-            lock.lock();
             // 唤醒等待的线程
             finish.signal();
             this.response = response;
@@ -60,7 +65,7 @@ public class MessageCallBack {
             // 被唤醒说明有返回结果
             timeout = finish.await(SystemConfig.SYSTEM_PROPERTY_MESSAGE_CALLBACK_TIMEOUT, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            LOGGER.error("MessageCallBack await error", e);
         }
 
         // 超时则抛出异常

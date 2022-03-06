@@ -8,7 +8,7 @@ import java.lang.reflect.Method;
 import java.util.UUID;
 
 
-public class MessageSendProxy<T> extends AbstractInvocationHandler {
+public class MessageSendProxy extends AbstractInvocationHandler {
 
     @Override
     public Object handleInvocation(Object proxy, Method method, Object[] args) throws Throwable {

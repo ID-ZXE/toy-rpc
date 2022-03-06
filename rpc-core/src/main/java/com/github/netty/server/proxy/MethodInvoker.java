@@ -10,21 +10,21 @@ public class MethodInvoker {
 
     private Object serviceBean;
 
-    private StopWatch sw = new StopWatch();
+    private StopWatch stopWatch = new StopWatch();
 
     public Object invoke(MessageRequest request) throws Throwable {
         String methodName = request.getMethodName();
         Object[] parameters = request.getParametersVal();
-        sw.reset();
-        sw.start();
+        stopWatch.reset();
+        stopWatch.start();
         // 服务端执行请求
         Object result = MethodUtils.invokeMethod(serviceBean, methodName, parameters);
-        sw.stop();
+        stopWatch.stop();
         return result;
     }
 
     public long getInvokeTimespan() {
-        return sw.getTime();
+        return stopWatch.getTime();
     }
 
 }

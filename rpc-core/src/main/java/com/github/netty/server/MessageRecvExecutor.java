@@ -28,6 +28,9 @@ public class MessageRecvExecutor {
 
     private String serverAddress;
 
+    /**
+     * 默认的序列化方式
+     */
     private SerializeProtocol serializeProtocol = SerializeProtocol.NATIVE;
 
     /**
@@ -35,28 +38,29 @@ public class MessageRecvExecutor {
      */
     private static final String DELIMITER = SystemConfig.DELIMITER;
 
-    // 两倍处理器数量
+    /**
+     * 两倍处理器数量
+     */
     private static final int PARALLEL = SystemConfig.SYSTEM_PROPERTY_PARALLEL * 2;
 
-    private static int threadNums = SystemConfig.SYSTEM_PROPERTY_THREADPOOL_THREAD_NUMS;
+    private static final int THREAD_NUMS = SystemConfig.SYSTEM_PROPERTY_THREADPOOL_THREAD_NUMS;
 
-    private static int queueNums = SystemConfig.SYSTEM_PROPERTY_THREADPOOL_QUEUE_NUMS;
+    private static final int QUEUE_NUMS = SystemConfig.SYSTEM_PROPERTY_THREADPOOL_QUEUE_NUMS;
 
     /**
      * guava的线程池,能够添加监听器
      * 用于处理请求
      */
-    private static volatile ListeningExecutorService threadPoolExecutor;
+    private static final ListeningExecutorService LISTENING_EXECUTOR_SERVICE =
+            MoreExecutors.listeningDecorator((ThreadPoolExecutor) RpcThreadPool.getExecutor(THREAD_NUMS, QUEUE_NUMS));
 
     private Map<String, Object> handlerMap = new ConcurrentHashMap<>();
 
-    private int numberOfEchoThreadsPool = 1;
+    private final ThreadFactory toyRpcThreadFactory = new NamedThreadFactory("Toy-ThreadFactory");
 
-    private ThreadFactory threadRpcFactory = new NamedThreadFactory("Toy-ThreadFactory");
+    private EventLoopGroup bossGroup = new NioEventLoopGroup();
 
-    private EventLoopGroup boss = new NioEventLoopGroup();
-
-    private EventLoopGroup worker = new NioEventLoopGroup(PARALLEL, threadRpcFactory, SelectorProvider.provider());
+    private EventLoopGroup workerGroup = new NioEventLoopGroup(PARALLEL, toyRpcThreadFactory, SelectorProvider.provider());
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -77,18 +81,7 @@ public class MessageRecvExecutor {
     }
 
     public static void submit(Callable<Boolean> task, final ChannelHandlerContext ctx, final MessageRequest request, final MessageResponse response) {
-        // 保证threadPoolExecutor的单例
-        // 双重检查
-        if (threadPoolExecutor == null) {
-            synchronized (MessageRecvExecutor.class) {
-                if (threadPoolExecutor == null) {
-                    threadPoolExecutor = MoreExecutors.listeningDecorator((ThreadPoolExecutor) RpcThreadPool.getExecutor(threadNums, queueNums));
-                }
-            }
-        }
-
-        // 提交任务
-        ListenableFuture<Boolean> listenableFuture = threadPoolExecutor.submit(task);
+        ListenableFuture<Boolean> listenableFuture = LISTENING_EXECUTOR_SERVICE.submit(task);
         Futures.addCallback(listenableFuture, new FutureCallback<Boolean>() {
             @Override
             public void onSuccess(Boolean result) {
@@ -105,15 +98,27 @@ public class MessageRecvExecutor {
             public void onFailure(Throwable throwable) {
                 LOGGER.error("send response failure", throwable);
             }
-        }, threadPoolExecutor);
+
+        }, LISTENING_EXECUTOR_SERVICE);
     }
 
+    /**
+     * 启动Netty服务器
+     */
     public void start() {
         try {
             ServerBootstrap bootstrap = new ServerBootstrap();
-            bootstrap.group(boss, worker).channel(NioServerSocketChannel.class)
+            bootstrap.group(bossGroup, workerGroup)
+                    // nio双向通道
+                    .channel(NioServerSocketChannel.class)
+                    // 子处理器, 用户处理workerGroup
+                    // 每一个channel由多个handler组成pipeline
                     .childHandler(new MessageRecvChannelInitializer(handlerMap).buildRpcSerializeProtocol(serializeProtocol))
+                    // BACKLOG用于构造服务端套接字ServerSocket对象, 标识当服务器请求处理线程全满时, 用于临时存放已完成三次握手的请求的队列的最大长度.
+                    // 如果未设置或所设置的值小于1，Java将使用默认值50。
                     .option(ChannelOption.SO_BACKLOG, 128)
+                    // 是否启用心跳保活机制. 在双方TCP套接字建立连接后（即都进入ESTABLISHED状态）
+                    // 并且在两个小时左右上层没有任何数据传输的情况下,这套机制才会被激活。
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
 
             String[] ipAddr = serverAddress.split(MessageRecvExecutor.DELIMITER);
@@ -144,8 +149,8 @@ public class MessageRecvExecutor {
      * 关闭server
      */
     public void stop() {
-        worker.shutdownGracefully();
-        boss.shutdownGracefully();
+        workerGroup.shutdownGracefully();
+        bossGroup.shutdownGracefully();
     }
 
     private void register() {

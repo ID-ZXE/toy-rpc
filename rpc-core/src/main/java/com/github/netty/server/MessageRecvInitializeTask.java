@@ -23,11 +23,11 @@ import java.util.concurrent.Callable;
 @Data
 public class MessageRecvInitializeTask implements Callable<Boolean> {
 
-    protected MessageRequest request = null;
+    protected MessageRequest request;
 
-    protected MessageResponse response = null;
+    protected MessageResponse response;
 
-    protected Map<String, Object> handlerMap = null;
+    protected Map<String, Object> handlerMap;
 
     protected static final String METHOD_MAPPED_NAME = "invoke";
 

@@ -30,7 +30,8 @@ public class MessageSendExecutor {
     }
 
     public <T> T execute(Class<T> rpcInterface) {
-        return Reflection.newProxy(rpcInterface, new MessageSendProxy<T>());
+        // 对rpcInterface的所有method进行代理
+        return Reflection.newProxy(rpcInterface, new MessageSendProxy());
     }
 
 }
